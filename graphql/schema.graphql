@@ -1,0 +1,108 @@
+directive @embedded on OBJECT
+
+directive @collection(name: String!) on OBJECT
+
+directive @index(name: String!) on FIELD_DEFINITION
+
+directive @resolver(name: String, paginated: Boolean! = false) on FIELD_DEFINITION
+
+directive @relation(name: String) on FIELD_DEFINITION
+
+directive @unique(index: String) on FIELD_DEFINITION
+
+"""
+Direct the client to resolve this field locally, either from the cache or local resolvers.
+"""
+directive @client(
+  """
+  When true, the client will never use the cache for this value. See
+  https://www.apollographql.com/docs/react/essentials/local-state/#forcing-resolvers-with-clientalways-true
+  """
+  always: Boolean
+) on FIELD | FRAGMENT_DEFINITION | INLINE_FRAGMENT
+
+"""
+Export this locally resolved field as a variable to be used in the remainder of this query. See
+https://www.apollographql.com/docs/react/essentials/local-state/#using-client-fields-as-variables
+"""
+directive @export(
+  """The variable name to export this field as."""
+  as: String!
+) on FIELD
+
+"""
+Specify a custom store key for this result. See
+https://www.apollographql.com/docs/react/advanced/caching/#the-connection-directive
+"""
+directive @connection(
+  """Specify the store key."""
+  key: String!
+
+  """
+  An array of query argument names to include in the generated custom store key.
+  """
+  filter: [String!]
+) on FIELD
+
+scalar Date
+
+"""'Drawings' input values"""
+input DrawingsInput {
+  name: String!
+  score: Float
+  brush: String
+  shape: String
+  drawing: String
+}
+
+type Mutation {
+  """Create a new document in the collection of 'Drawings'"""
+  createDrawings(
+    """'Drawings' input values"""
+    data: DrawingsInput!
+  ): Drawings!
+
+  """Update an existing document in the collection of 'Drawings'"""
+  updateDrawings(
+    """The 'Drawings' document's ID"""
+    id: ID!
+
+    """'Drawings' input values"""
+    data: DrawingsInput!
+  ): Drawings
+
+  """Delete an existing document in the collection of 'Drawings'"""
+  deleteDrawings(
+    """The 'Drawings' document's ID"""
+    id: ID!
+  ): Drawings
+}
+
+scalar Time
+
+type Drawings {
+  name: String!
+
+  """The document's ID."""
+  _id: ID!
+  score: Float
+  shape: String
+  brush: String
+  drawing: String
+
+  """The document's timestamp."""
+  _ts: Long!
+}
+
+type Query {
+  """Find a document from the collection of 'Drawings' by its id."""
+  findDrawingsByID(
+    """The 'Drawings' document's ID"""
+    id: ID!
+  ): Drawings
+}
+
+"""
+The `Long` scalar type represents non-fractional signed whole numeric values. Long can represent values between -(2^63) and 2^63 - 1.
+"""
+scalar Long

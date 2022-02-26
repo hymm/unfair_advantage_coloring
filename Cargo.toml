@@ -1,0 +1,13 @@
+[package]
+name = "unfair_advantage_coloring"
+version = "0.1.0"
+edition = "2021"
+license = "MIT OR Apache-2.0"
+
+[dependencies]
+async-compat = "0.2"
+bevy = "0.6"
+graphql_client = "0.10.0"
+serde = "1"
+reqwest = { version = "0.11.9", features = ["json"] }
+futures-lite = "1.4.0"

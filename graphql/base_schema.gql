@@ -1,0 +1,7 @@
+type Drawings {
+   name: String! @unique
+   score: Float
+   brush: String
+   shape: String
+   drawing: String
+}

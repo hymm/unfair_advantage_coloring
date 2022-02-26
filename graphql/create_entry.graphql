@@ -1,0 +1,6 @@
+mutation createDrawings($new_drawing: DrawingsInput) {
+  createDrawings(data: $new_drawing) {
+    _id
+    name
+  }
+}
