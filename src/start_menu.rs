@@ -86,13 +86,13 @@ fn button_system(
                 text.sections[0].value = "Press".to_string();
                 let task = task_pool.spawn(Compat::new(async {
                     let request_body = createDrawings::build_query(create_drawings::Variables {
-                        new_drawing: Some(DrawingsInput {
+                        new_drawing: DrawingsInput {
                             name: "test_user".to_string(),
                             score: None,
                             brush: None,
                             shape: None,
                             drawing: None,
-                        }),
+                        },
                     });
 
                     const FAUNA_API_TOKEN: &str = env!("UNFAIR_ADVANTAGE_PUBLIC_FAUNA_CLIENT_KEY");
@@ -109,7 +109,9 @@ fn button_system(
                                 .unwrap(),
                             ))
                             .collect(),
-                        ).build().unwrap();
+                        )
+                        .build()
+                        .unwrap();
                     let res = client
                         .post("https://graphql.fauna.com/graphql")
                         .json(&request_body)

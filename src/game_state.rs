@@ -1,10 +1,9 @@
-
 #[derive(Clone, Eq, PartialEq, Debug, Hash)]
 pub enum GameState {
-  Loading,
-  StartMenu,
-  NameEntry,
-  ShowBrush,
-  Painting,
-  LeaderBoard,
+    Loading,
+    StartMenu,
+    NameEntry,
+    ShowBrush,
+    Painting,
+    LeaderBoard,
 }

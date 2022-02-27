@@ -1,4 +1,4 @@
-mutation createDrawings($new_drawing: DrawingsInput) {
+mutation createDrawings($new_drawing: DrawingsInput!) {
   createDrawings(data: $new_drawing) {
     _id
     name
