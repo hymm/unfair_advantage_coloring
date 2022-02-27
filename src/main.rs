@@ -2,8 +2,9 @@
 // disable console opening on windows
 // #![windows_subsystem = "windows"]
 
-use bevy::{prelude::*};
+use bevy::prelude::*;
 mod game_state;
+mod painting;
 mod start_menu;
 
 use crate::game_state::GameState;
@@ -14,6 +15,7 @@ fn main() {
         .add_plugins(DefaultPlugins)
         .add_startup_system(setup)
         .add_plugin(crate::start_menu::StartMenuPlugin)
+        .add_plugin(crate::painting::PaintingPlugin)
         .add_startup_system(finish_loading)
         .run();
 }
@@ -24,5 +26,5 @@ fn setup(mut commands: Commands) {
 
 // stub function to move out of loading state
 fn finish_loading(mut state: ResMut<State<GameState>>) {
-    state.push(GameState::StartMenu).unwrap();
+    state.push(GameState::Painting).unwrap();
 }

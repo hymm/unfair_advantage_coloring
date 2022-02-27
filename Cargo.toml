@@ -7,6 +7,7 @@ license = "MIT OR Apache-2.0"
 [dependencies]
 async-compat = "0.2"
 bevy = "0.6"
+bevy_prototype_lyon = "0.4"
 graphql_client = "0.10.0"
 serde = "1"
 reqwest = { version = "0.11.9", features = ["json"] }
