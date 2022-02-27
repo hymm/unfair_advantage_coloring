@@ -105,10 +105,12 @@ fn button_hover_system(
 fn handle_start_clicked(
     mut interaction_query: Query<&Interaction, (Changed<Interaction>, With<StartButton>)>,
     mut state: ResMut<State<GameState>>,
+    mut mouse_button: ResMut<Input<MouseButton>>,
 ) {
     for interaction in interaction_query.iter_mut() {
         if *interaction == Interaction::Clicked {
             state.set(GameState::Painting).unwrap();
+            mouse_button.clear();
         }
     }
 }

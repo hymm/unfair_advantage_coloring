@@ -15,7 +15,11 @@ impl Plugin for PaintingPlugin {
                     .with_system(setup_brush)
                     .with_system(setup_painting_area),
             )
-            .add_system_set(SystemSet::on_update(GameState::Painting).with_system(track_cursor));
+            .add_system_set(
+                SystemSet::on_update(GameState::Painting)
+                    .with_system(track_cursor)
+                    .with_system(paint),
+            );
     }
 }
 
@@ -72,5 +76,19 @@ fn setup_painting_area(mut commands: Commands, mut images: ResMut<Assets<Image>>
         },
         texture,
         ..SpriteBundle::default()
-    });
+    }).insert(PaintingArea);
+}
+
+fn paint(
+    q: Query<&Handle<Image>, With<PaintingArea>>,
+    mut images: ResMut<Assets<Image>>,
+    mouse_button: Res<Input<MouseButton>>,
+) {
+    if mouse_button.just_pressed(MouseButton::Left) {
+        let handle = q.single();
+        let mut image = images.get_mut(handle).unwrap();
+        let new = [255, 0, 0, 255];
+        let splice_range = 0..4;
+        image.data.splice(splice_range, new);
+    }
 }
