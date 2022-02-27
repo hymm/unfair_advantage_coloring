@@ -1,10 +1,10 @@
 use async_compat::Compat;
-use futures_lite::future;
 use bevy::log::info;
 use bevy::{
     prelude::*,
     tasks::{IoTaskPool, Task},
 };
+use futures_lite::future;
 use graphql_client::{GraphQLQuery, Response};
 
 use crate::{game_state::GameState, start_menu::create_drawings::DrawingsInput};
@@ -94,12 +94,28 @@ fn button_system(
                             drawing: None,
                         }),
                     });
-                    let client = reqwest::Client::new();
+
+                    const FAUNA_API_TOKEN: &str = env!("UNFAIR_ADVANTAGE_PUBLIC_FAUNA_CLIENT_KEY");
+
+                    let client = reqwest::Client::builder()
+                        .user_agent("itch.io-bevy")
+                        .default_headers(
+                            std::iter::once((
+                                reqwest::header::AUTHORIZATION,
+                                reqwest::header::HeaderValue::from_str(&format!(
+                                    "Bearer {}",
+                                    FAUNA_API_TOKEN,
+                                ))
+                                .unwrap(),
+                            ))
+                            .collect(),
+                        ).build().unwrap();
                     let res = client
                         .post("https://graphql.fauna.com/graphql")
                         .json(&request_body)
                         .send()
-                        .await.map_err(|e| e.to_string())?;
+                        .await
+                        .map_err(|e| e.to_string())?;
                     let response_body: Response<create_drawings::ResponseData> =
                         res.json().await.map_err(|e| e.to_string())?;
                     if let Some(errors) = response_body.errors {
@@ -128,7 +144,7 @@ fn create_drawing_task(mut commands: Commands, mut q: Query<(Entity, &mut Create
         let status = future::block_on(future::poll_once(&mut task.0));
         if let Some(res) = status {
             match res {
-                Ok(_) => {},
+                Ok(_) => {}
                 Err(e) => info!("{}", e),
             }
             commands.entity(e).despawn();

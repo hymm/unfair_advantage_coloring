@@ -2,7 +2,7 @@
 // disable console opening on windows
 // #![windows_subsystem = "windows"]
 
-use bevy::{prelude::*, log::LogPlugin};
+use bevy::{prelude::*};
 mod game_state;
 mod start_menu;
 
