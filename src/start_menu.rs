@@ -15,9 +15,11 @@ impl Plugin for StartMenuPlugin {
         app.add_system_set(SystemSet::on_enter(GameState::StartMenu).with_system(setup_button))
             .add_system_set(
                 SystemSet::on_update(GameState::StartMenu)
-                    .with_system(button_system)
-                    .with_system(create_drawing_task),
-            );
+                    .with_system(button_hover_system)
+                    .with_system(create_drawing_task)
+                    .with_system(handle_start_clicked),
+            )
+            .add_system_set(SystemSet::on_exit(GameState::StartMenu).with_system(despawn_button));
     }
 }
 
@@ -37,6 +39,9 @@ const NORMAL_BUTTON: Color = Color::rgb(0.15, 0.15, 0.15);
 const HOVERED_BUTTON: Color = Color::rgb(0.25, 0.25, 0.25);
 const PRESSED_BUTTON: Color = Color::rgb(0.35, 0.75, 0.35);
 
+#[derive(Component)]
+struct StartButton;
+
 fn setup_button(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands.spawn_bundle(UiCameraBundle::default());
     commands
@@ -54,10 +59,11 @@ fn setup_button(mut commands: Commands, asset_server: Res<AssetServer>) {
             color: NORMAL_BUTTON.into(),
             ..Default::default()
         })
+        .insert(StartButton)
         .with_children(|parent| {
             parent.spawn_bundle(TextBundle {
                 text: Text::with_section(
-                    "Button",
+                    "Start",
                     TextStyle {
                         font: asset_server.load("fonts/Archivo-Black.ttf"),
                         font_size: 40.0,
@@ -70,73 +76,96 @@ fn setup_button(mut commands: Commands, asset_server: Res<AssetServer>) {
         });
 }
 
-fn button_system(
-    mut commands: Commands,
+fn despawn_button(mut commands: Commands, query: Query<Entity, With<StartButton>>) {
+    let e = query.single();
+    commands.entity(e).despawn_recursive();
+}
+
+fn button_hover_system(
     mut interaction_query: Query<
-        (&Interaction, &mut UiColor, &Children),
+        (&Interaction, &mut UiColor),
         (Changed<Interaction>, With<Button>),
     >,
-    mut text_query: Query<&mut Text>,
-    task_pool: ResMut<IoTaskPool>,
 ) {
-    for (interaction, mut color, children) in interaction_query.iter_mut() {
-        let mut text = text_query.get_mut(children[0]).unwrap();
+    for (interaction, mut color) in interaction_query.iter_mut() {
         match *interaction {
             Interaction::Clicked => {
-                text.sections[0].value = "Press".to_string();
-                let task = task_pool.spawn(Compat::new(async {
-                    let request_body = createDrawings::build_query(create_drawings::Variables {
-                        new_drawing: DrawingsInput {
-                            name: "test_user".to_string(),
-                            score: None,
-                            brush: None,
-                            shape: None,
-                            drawing: None,
-                        },
-                    });
-
-                    const FAUNA_API_TOKEN: &str = env!("UNFAIR_ADVANTAGE_PUBLIC_FAUNA_CLIENT_KEY");
-
-                    let client = reqwest::Client::builder()
-                        .user_agent("itch.io-bevy")
-                        .default_headers(
-                            std::iter::once((
-                                reqwest::header::AUTHORIZATION,
-                                reqwest::header::HeaderValue::from_str(&format!(
-                                    "Bearer {}",
-                                    FAUNA_API_TOKEN,
-                                ))
-                                .unwrap(),
-                            ))
-                            .collect(),
-                        )
-                        .build()
-                        .unwrap();
-                    let res = client
-                        .post("https://graphql.fauna.com/graphql")
-                        .json(&request_body)
-                        .send()
-                        .await
-                        .map_err(|e| e.to_string())?;
-                    let response_body: Response<create_drawings::ResponseData> =
-                        res.json().await.map_err(|e| e.to_string())?;
-                    if let Some(errors) = response_body.errors {
-                        return Err(errors[0].to_string());
-                    }
-                    Ok(())
-                }));
-
-                commands.spawn().insert(CreateDrawingsTask(task));
                 *color = PRESSED_BUTTON.into();
             }
             Interaction::Hovered => {
-                text.sections[0].value = "Hover".to_string();
                 *color = HOVERED_BUTTON.into();
             }
             Interaction::None => {
-                text.sections[0].value = "Button".to_string();
                 *color = NORMAL_BUTTON.into();
             }
+        }
+    }
+}
+
+fn handle_start_clicked(
+    mut interaction_query: Query<&Interaction, (Changed<Interaction>, With<StartButton>)>,
+    mut state: ResMut<State<GameState>>,
+) {
+    for interaction in interaction_query.iter_mut() {
+        if *interaction == Interaction::Clicked {
+            state.set(GameState::Painting).unwrap();
+        }
+    }
+}
+
+fn write_name_system(
+    mut commands: Commands,
+    mut interaction_query: Query<(&Interaction, &Children), (Changed<Interaction>, With<Button>)>,
+    mut text_query: Query<&mut Text>,
+    task_pool: ResMut<IoTaskPool>,
+) {
+    for (interaction, children) in interaction_query.iter_mut() {
+        let mut text = text_query.get_mut(children[0]).unwrap();
+        if *interaction == Interaction::Clicked {
+            text.sections[0].value = "Press".to_string();
+            let task = task_pool.spawn(Compat::new(async {
+                let request_body = createDrawings::build_query(create_drawings::Variables {
+                    new_drawing: DrawingsInput {
+                        name: "test_user".to_string(),
+                        score: None,
+                        brush: None,
+                        shape: None,
+                        drawing: None,
+                    },
+                });
+
+                const FAUNA_API_TOKEN: &str = env!("UNFAIR_ADVANTAGE_PUBLIC_FAUNA_CLIENT_KEY");
+
+                let client = reqwest::Client::builder()
+                    .user_agent("itch.io-bevy")
+                    .default_headers(
+                        std::iter::once((
+                            reqwest::header::AUTHORIZATION,
+                            reqwest::header::HeaderValue::from_str(&format!(
+                                "Bearer {}",
+                                FAUNA_API_TOKEN,
+                            ))
+                            .unwrap(),
+                        ))
+                        .collect(),
+                    )
+                    .build()
+                    .unwrap();
+                let res = client
+                    .post("https://graphql.fauna.com/graphql")
+                    .json(&request_body)
+                    .send()
+                    .await
+                    .map_err(|e| e.to_string())?;
+                let response_body: Response<create_drawings::ResponseData> =
+                    res.json().await.map_err(|e| e.to_string())?;
+                if let Some(errors) = response_body.errors {
+                    return Err(errors[0].to_string());
+                }
+                Ok(())
+            }));
+
+            commands.spawn().insert(CreateDrawingsTask(task));
         }
     }
 }

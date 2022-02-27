@@ -26,5 +26,5 @@ fn setup(mut commands: Commands) {
 
 // stub function to move out of loading state
 fn finish_loading(mut state: ResMut<State<GameState>>) {
-    state.push(GameState::Painting).unwrap();
+    state.set(GameState::StartMenu).unwrap();
 }
