@@ -217,7 +217,7 @@ fn color_pixel(image: &mut Image, pos: Vec2) {
 }
 
 #[derive(Default)]
-struct Score(pub f32);
+pub struct Score(pub f32);
 
 fn setup_score(mut commands: Commands) {
     commands.insert_resource(Score(0.0));
@@ -228,13 +228,8 @@ fn calculate_score(
     player_image: Query<&Handle<Image>, With<PaintingArea>>,
     images: Res<Assets<Image>>,
     mut score: ResMut<Score>,
-    mouse_button: Res<Input<MouseButton>>,
 ) {
-    let target_image = images.get(target_image.single());
-    if mouse_button.pressed(MouseButton::Left) || target_image.is_none() {
-        return;
-    }
-    let target_image = target_image.unwrap();
+    let target_image = images.get(target_image.single()).unwrap();
     let player_image = images.get(player_image.single()).unwrap();
 
     let mut sum_good = 0;
