@@ -13,9 +13,9 @@ pub struct StartMenuPlugin;
 impl Plugin for StartMenuPlugin {
     fn build(&self, app: &mut App) {
         app.add_system_set(SystemSet::on_enter(GameState::StartMenu).with_system(setup_button))
+            .add_system(button_hover_system)
             .add_system_set(
                 SystemSet::on_update(GameState::StartMenu)
-                    .with_system(button_hover_system)
                     .with_system(create_drawing_task)
                     .with_system(handle_start_clicked),
             )

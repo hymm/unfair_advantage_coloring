@@ -15,22 +15,28 @@ impl Plugin for PaintingPlugin {
                     .with_system(setup_brush)
                     .with_system(setup_painting_area)
                     .with_system(setup_target_image)
-                    .with_system(setup_score),
+                    .with_system(setup_score)
+                    .with_system(setup_ui),
             )
             .add_system_set(
                 SystemSet::on_update(GameState::Painting)
                     .with_system(track_cursor.label("track_cursor"))
                     .with_system(paint.after("track_cursor"))
+                    .with_system(handle_done_clicked),
             )
             .add_system_set(
                 SystemSet::on_exit(GameState::Painting)
-                .with_system(calculate_score)
+                    .with_system(calculate_score)
+                    .with_system(despawn_painting),
             );
     }
 }
 
 const CANVAS_WIDTH: usize = 600;
 const CANVAS_HEIGHT: usize = 600;
+
+#[derive(Component)]
+struct PaintingScene;
 
 #[derive(Component)]
 struct Paintbrush {
@@ -49,7 +55,8 @@ fn setup_brush(mut commands: Commands) {
             DrawMode::Fill(FillMode::color(Color::rgb_u8(200, 140, 50))),
             Transform::from_xyz(0.0, 0.0, 2.0),
         ))
-        .insert(Paintbrush { extents });
+        .insert(Paintbrush { extents })
+        .insert(PaintingScene);
 }
 
 fn track_cursor(
@@ -90,7 +97,65 @@ fn setup_painting_area(mut commands: Commands, mut images: ResMut<Assets<Image>>
             transform: Transform::from_xyz(0.0, 0.0, 1.0),
             ..SpriteBundle::default()
         })
-        .insert(PaintingArea);
+        .insert(PaintingArea)
+        .insert(PaintingScene);
+}
+
+#[derive(Component)]
+struct DoneButton;
+
+fn setup_ui(mut commands: Commands, asset_server: Res<AssetServer>) {
+    commands
+        .spawn_bundle(ButtonBundle {
+            style: Style {
+                size: Size::new(Val::Px(150.0), Val::Px(65.0)),
+                // center button
+                margin: Rect {
+                    left: Val::Auto,
+                    right: Val::Auto,
+                    top: Val::Auto,
+                    bottom: Val::Percent(0.0),
+                },
+                // horizontally center child text
+                justify_content: JustifyContent::Center,
+                // vertically center child text
+                align_items: AlignItems::Center,
+                ..Default::default()
+            },
+            color: Color::rgb(0.15, 0.15, 0.15).into(),
+            ..Default::default()
+        })
+        .insert(DoneButton)
+        .insert(PaintingScene)
+        .with_children(|parent| {
+            parent
+                .spawn_bundle(TextBundle {
+                    text: Text::with_section(
+                        "Done",
+                        TextStyle {
+                            font: asset_server.load("fonts/Archivo-Black.ttf"),
+                            font_size: 40.0,
+                            color: Color::rgb(0.9, 0.9, 0.9),
+                        },
+                        Default::default(),
+                    ),
+                    ..Default::default()
+                })
+                .insert(PaintingScene);
+        });
+}
+
+fn handle_done_clicked(
+    mut interaction_query: Query<&Interaction, (Changed<Interaction>, With<DoneButton>)>,
+    mut state: ResMut<State<GameState>>,
+    mut mouse_button: ResMut<Input<MouseButton>>,
+) {
+    for interaction in interaction_query.iter_mut() {
+        if *interaction == Interaction::Clicked {
+            state.set(GameState::LeaderBoard).unwrap();
+            mouse_button.clear();
+        }
+    }
 }
 
 #[derive(Component)]
@@ -102,7 +167,8 @@ fn setup_target_image(mut commands: Commands, asset_server: Res<AssetServer>) {
             texture: asset_server.load("images/test.png"),
             ..SpriteBundle::default()
         })
-        .insert(TargetImage);
+        .insert(TargetImage)
+        .insert(PaintingScene);
 }
 
 fn paint(
@@ -191,4 +257,10 @@ fn calculate_score(
     }
 
     score.0 = (sum_good - sum_bad) as f32;
+}
+
+fn despawn_painting(mut commands: Commands, q: Query<Entity, With<PaintingScene>>) {
+    for e in q.iter() {
+        commands.entity(e).despawn();
+    }
 }
