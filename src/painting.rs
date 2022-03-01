@@ -23,11 +23,11 @@ impl Plugin for PaintingPlugin {
                 SystemSet::on_update(GameState::Painting)
                     .with_system(track_cursor.label("track_cursor"))
                     .with_system(paint.after("track_cursor"))
-                    .with_system(handle_done_clicked),
+                    .with_system(handle_done_clicked)
+                    .with_system(calculate_score),
             )
             .add_system_set(
                 SystemSet::on_exit(GameState::Painting)
-                    .with_system(calculate_score)
                     .with_system(despawn_painting),
             );
     }
@@ -238,8 +238,33 @@ fn color_pixel(image: &mut Image, pos: Vec2) {
 #[derive(Default)]
 pub struct Score(pub f32);
 
-fn setup_score(mut commands: Commands) {
+#[derive(Component)]
+pub struct ScoreText;
+
+fn setup_score(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands.insert_resource(Score(0.0));
+
+    commands.spawn_bundle(TextBundle {
+        text: Text::with_section(
+            format!("Score: {}", 0.0),
+            TextStyle {
+                font: asset_server.load("fonts/Archivo-Black.ttf"),
+                font_size: 40.0,
+                color: Color::rgb(0.5, 0.5, 1.0),
+            },
+            Default::default(),
+        ),
+        style: Style {
+            position_type: PositionType::Absolute,
+            position: Rect {
+                top: Val::Px(5.0),
+                left: Val::Px(5.0),
+                ..Default::default()
+            },
+            ..Default::default()
+        },
+        ..Default::default()
+    }).insert(ScoreText);
 }
 
 fn calculate_score(
@@ -247,8 +272,13 @@ fn calculate_score(
     player_image: Query<&Handle<Image>, With<PaintingArea>>,
     images: Res<Assets<Image>>,
     mut score: ResMut<Score>,
+    mut score_text: Query<&mut Text, With<ScoreText>>,
 ) {
-    let target_image = images.get(target_image.single()).unwrap();
+    let target_image = images.get(target_image.single());
+    if target_image.is_none() {
+        return;
+    }
+    let target_image = target_image.unwrap();
     let player_image = images.get(player_image.single()).unwrap();
 
     let mut sum_good = 0;
@@ -275,6 +305,7 @@ fn calculate_score(
     }
 
     score.0 = ((sum_good - sum_bad) as f32 / max_score as f32) * 100.0;
+    score_text.single_mut().sections[0].value = format!("Score: {}", score.0);
 }
 
 fn despawn_painting(mut commands: Commands, q: Query<Entity, With<PaintingScene>>) {

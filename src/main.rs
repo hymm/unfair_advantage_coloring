@@ -3,6 +3,7 @@
 // #![windows_subsystem = "windows"]
 
 use bevy::prelude::*;
+mod constants;
 mod game_state;
 mod leaderboard;
 mod painting;
