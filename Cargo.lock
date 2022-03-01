@@ -3523,6 +3523,7 @@ dependencies = [
  "futures-lite",
  "getrandom",
  "graphql_client",
+ "rand",
  "reqwest",
  "serde",
 ]

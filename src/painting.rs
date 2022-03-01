@@ -3,7 +3,7 @@ use bevy::{
     render::render_resource::{Extent3d, TextureDimension, TextureFormat},
 };
 use bevy_prototype_lyon::{prelude::*, shapes};
-use getrandom::getrandom;
+use rand::{thread_rng, Rng};
 
 use crate::game_state::GameState;
 
@@ -44,26 +44,44 @@ struct Paintbrush {
     extents: Vec2,
 }
 
+#[derive(Component)]
+struct BrushParent;
+
 fn setup_brush(mut commands: Commands) {
-    let extents = Vec2::new(50.0, 50.0);
-    commands
+    let mut rng = thread_rng();
+    let parent_id = commands
         .spawn()
-        .insert_bundle(GeometryBuilder::build_as(
-            &shapes::Rectangle {
-                extents,
-                origin: RectangleOrigin::Center,
-            },
-            DrawMode::Fill(FillMode::color(Color::rgb_u8(200, 140, 50))),
-            Transform::from_xyz(0.0, 0.0, 2.0),
-        ))
-        .insert(Paintbrush { extents })
-        .insert(PaintingScene);
+        .insert(BrushParent)
+        .insert(Transform::default())
+        .insert(GlobalTransform::default())
+        .id();
+    for _ in 0..3 {
+        let width = rng.gen_range(20.0..100.0);
+        let height = rng.gen_range(20.0..100.0);
+        let extents = Vec2::new(width, height);
+
+        let offset_x = rng.gen_range(-100.0..100.0);
+        let offset_y = rng.gen_range(-100.0..100.0);
+        commands.entity(parent_id).with_children(|parent| {
+            parent
+                .spawn_bundle(GeometryBuilder::build_as(
+                    &shapes::Rectangle {
+                        extents,
+                        origin: RectangleOrigin::Center,
+                    },
+                    DrawMode::Fill(FillMode::color(Color::rgb_u8(200, 140, 50))),
+                    Transform::from_xyz(offset_x, offset_y, 0.0),
+                ))
+                .insert(Paintbrush { extents })
+                .insert(PaintingScene);
+        });
+    }
 }
 
 fn track_cursor(
     mut cursor_pos: EventReader<CursorMoved>,
     windows: Res<Windows>,
-    mut brush: Query<&mut Transform, With<Paintbrush>>,
+    mut brush: Query<&mut Transform, With<BrushParent>>,
 ) {
     let window = windows.get_primary().unwrap();
     for position in cursor_pos.iter() {
@@ -176,21 +194,21 @@ fn paint(
     q: Query<&Handle<Image>, With<PaintingArea>>,
     mut images: ResMut<Assets<Image>>,
     mouse_button: Res<Input<MouseButton>>,
-    brush: Query<(&mut Transform, &Paintbrush)>,
+    brush: Query<(&mut GlobalTransform, &Paintbrush)>,
 ) {
     if mouse_button.pressed(MouseButton::Left) {
-        // convert transform to top left of paint area
-        let (t, Paintbrush { extents }) = brush.single();
-        let cursor_pos = get_canvas_position_from_translation(t);
-        let brush_top_left = cursor_pos - *extents / 2.0;
-        // TODO: discard pixels outside of canvas
-        let handle = q.single();
-        let image = images.get_mut(handle).unwrap();
+        for (t, Paintbrush { extents }) in brush.iter() {
+            let cursor_pos = get_canvas_position_from_translation(t);
+            let brush_top_left = cursor_pos - *extents / 2.0;
+            // TODO: discard pixels outside of canvas
+            let handle = q.single();
+            let image = images.get_mut(handle).unwrap();
 
-        for x in 0..(extents.x as u32) {
-            for y in 0..(extents.y as u32) {
-                let pos = brush_top_left + Vec2::new(x as f32, y as f32);
-                color_pixel(image, pos);
+            for x in 0..(extents.x as u32) {
+                for y in 0..(extents.y as u32) {
+                    let pos = brush_top_left + Vec2::new(x as f32, y as f32);
+                    color_pixel(image, pos);
+                }
             }
         }
     }
@@ -200,7 +218,7 @@ fn get_start_byte(x: usize, y: usize) -> usize {
     (y * CANVAS_WIDTH as usize + x) * 4
 }
 
-fn get_canvas_position_from_translation(t: &Transform) -> Vec2 {
+fn get_canvas_position_from_translation(t: &GlobalTransform) -> Vec2 {
     let mut canvas_pos =
         t.translation.truncate() + Vec2::new(CANVAS_WIDTH as f32, -(CANVAS_HEIGHT as f32)) / 2.0;
     canvas_pos.y = -canvas_pos.y;

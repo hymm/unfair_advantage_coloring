@@ -21,5 +21,6 @@ bevy_prototype_lyon = "0.4"
 getrandom = { version = "0.2", features = ["js"] }
 graphql_client = "0.10.0"
 serde = "1"
+rand = "0.8"
 reqwest = { version = "0.11.9", features = ["json"] }
 futures-lite = "1.4.0"
