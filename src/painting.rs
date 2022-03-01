@@ -234,11 +234,15 @@ fn calculate_score(
 
     let mut sum_good = 0;
     let mut sum_bad = 0;
+    let mut max_score = 0;
     for x in 0..CANVAS_WIDTH {
         for y in 0..CANVAS_HEIGHT {
             let start_byte = get_start_byte(x, y);
             // use if not white
             let should_color = target_image.data[start_byte] != 255;
+            if should_color {
+                max_score += 1;
+            }
             // use alpha transparency
             let is_colored = player_image.data[start_byte + 3] == 255;
             if is_colored {
@@ -251,7 +255,7 @@ fn calculate_score(
         }
     }
 
-    score.0 = (sum_good - sum_bad) as f32;
+    score.0 = ((sum_good - sum_bad) as f32 / max_score as f32) * 100.0;
 }
 
 fn despawn_painting(mut commands: Commands, q: Query<Entity, With<PaintingScene>>) {
