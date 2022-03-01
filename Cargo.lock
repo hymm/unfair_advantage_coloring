@@ -3521,6 +3521,7 @@ dependencies = [
  "bevy",
  "bevy_prototype_lyon",
  "futures-lite",
+ "getrandom",
  "graphql_client",
  "reqwest",
  "serde",

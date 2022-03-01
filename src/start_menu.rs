@@ -16,7 +16,6 @@ impl Plugin for StartMenuPlugin {
             .add_system(button_hover_system)
             .add_system_set(
                 SystemSet::on_update(GameState::StartMenu)
-                    .with_system(create_drawing_task)
                     .with_system(handle_start_clicked),
             )
             .add_system_set(SystemSet::on_exit(GameState::StartMenu).with_system(despawn_button));
@@ -32,8 +31,6 @@ impl Plugin for StartMenuPlugin {
 )]
 struct createDrawings;
 
-#[derive(Component)]
-struct CreateDrawingsTask(pub Task<Result<(), String>>);
 
 const NORMAL_BUTTON: Color = Color::rgb(0.15, 0.15, 0.15);
 const HOVERED_BUTTON: Color = Color::rgb(0.25, 0.25, 0.25);
@@ -116,7 +113,6 @@ fn handle_start_clicked(
 }
 
 fn write_name_system(
-    mut commands: Commands,
     mut interaction_query: Query<(&Interaction, &Children), (Changed<Interaction>, With<Button>)>,
     mut text_query: Query<&mut Text>,
     task_pool: ResMut<IoTaskPool>,
@@ -139,7 +135,6 @@ fn write_name_system(
                 const FAUNA_API_TOKEN: &str = env!("UNFAIR_ADVANTAGE_PUBLIC_FAUNA_CLIENT_KEY");
 
                 let client = reqwest::Client::builder()
-                    .user_agent("itch.io-bevy")
                     .default_headers(
                         std::iter::once((
                             reqwest::header::AUTHORIZATION,
@@ -166,21 +161,7 @@ fn write_name_system(
                 }
                 Ok(())
             }));
-
-            commands.spawn().insert(CreateDrawingsTask(task));
-        }
-    }
-}
-
-fn create_drawing_task(mut commands: Commands, mut q: Query<(Entity, &mut CreateDrawingsTask)>) {
-    for (e, mut task) in q.iter_mut() {
-        let status = future::block_on(future::poll_once(&mut task.0));
-        if let Some(res) = status {
-            match res {
-                Ok(_) => {}
-                Err(e) => info!("{}", e),
-            }
-            commands.entity(e).despawn();
+            task.detach();
         }
     }
 }

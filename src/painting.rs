@@ -3,6 +3,7 @@ use bevy::{
     render::render_resource::{Extent3d, TextureDimension, TextureFormat},
 };
 use bevy_prototype_lyon::{prelude::*, shapes};
+use getrandom::getrandom;
 
 use crate::game_state::GameState;
 
