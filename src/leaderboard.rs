@@ -1,11 +1,7 @@
 use async_compat::Compat;
 use bevy::{prelude::*, tasks::IoTaskPool};
-use graphql_client::{GraphQLQuery, Response};
 
-use crate::{
-    constants::NORMAL_BUTTON, game_state::GameState, leaderboard::create_drawings::DrawingsInput,
-    painting::Score,
-};
+use crate::{constants::NORMAL_BUTTON, game_state::GameState, painting::Score};
 
 pub struct LeaderBoardPlugin;
 impl Plugin for LeaderBoardPlugin {
@@ -16,14 +12,6 @@ impl Plugin for LeaderBoardPlugin {
             );
     }
 }
-// graphql query to write name to database
-#[allow(non_camel_case_types)] // must match name in graphql file
-#[derive(GraphQLQuery)]
-#[graphql(
-    schema_path = "graphql/schema.graphql",
-    query_path = "graphql/create_entry.graphql"
-)]
-struct createDrawings;
 
 #[derive(Component)]
 struct SendButton;
@@ -67,48 +55,7 @@ fn write_name_system(
 ) {
     for interaction in interaction_query.iter_mut() {
         if *interaction == Interaction::Clicked {
-            let task = task_pool.spawn(Compat::new(async {
-                info!("sending");
-                let request_body = createDrawings::build_query(create_drawings::Variables {
-                    new_drawing: DrawingsInput {
-                        name: "test_user".to_string(),
-                        score: None,
-                        brush: None,
-                        shape: None,
-                        drawing: None,
-                    },
-                });
-
-                const FAUNA_API_TOKEN: &str = env!("UNFAIR_ADVANTAGE_PUBLIC_FAUNA_CLIENT_KEY");
-
-                let client = reqwest::Client::builder()
-                    .default_headers(
-                        std::iter::once((
-                            reqwest::header::AUTHORIZATION,
-                            reqwest::header::HeaderValue::from_str(&format!(
-                                "Bearer {}",
-                                FAUNA_API_TOKEN,
-                            ))
-                            .unwrap(),
-                        ))
-                        .collect(),
-                    )
-                    .build()
-                    .unwrap();
-                let res = client
-                    .post("https://graphql.fauna.com/graphql")
-                    .json(&request_body)
-                    .send()
-                    .await
-                    .map_err(|e| e.to_string())?;
-                let response_body: Response<create_drawings::ResponseData> =
-                    res.json().await.map_err(|e| e.to_string())?;
-                if let Some(errors) = response_body.errors {
-                    return Err(errors[0].to_string());
-                }
-                info!("sent");
-                Ok(())
-            }));
+            let task = task_pool.spawn(Compat::new(async {}));
             task.detach();
         }
     }

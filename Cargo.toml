@@ -16,6 +16,7 @@ codegen-units = 1
 
 [dependencies]
 async-compat = "0.2"
+async-channel = "1.6"
 bevy = "0.6"
 bevy_prototype_lyon = "0.4"
 getrandom = { version = "0.2", features = ["js"] }
@@ -23,4 +24,9 @@ graphql_client = "0.10.0"
 serde = "1"
 rand = "0.8"
 reqwest = { version = "0.11.9", features = ["json"] }
+tokio = { version = "1", features = ["rt"] }
 futures-lite = "1.4.0"
+
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+wasm-bindgen = "0.2.69"
+wasm-bindgen-futures = "0.4.19"
