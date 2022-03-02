@@ -57,8 +57,8 @@ fn setup_brush(mut commands: Commands) {
         let height = rng.gen_range(20.0..100.0);
         let extents = Vec2::new(width, height);
 
-        let offset_x = rng.gen_range(-100.0..100.0);
-        let offset_y = rng.gen_range(-100.0..100.0);
+        let offset_x = rng.gen_range(-75.0..75.0);
+        let offset_y = rng.gen_range(-75.0..75.0);
         commands.entity(parent_id).with_children(|parent| {
             parent
                 .spawn_bundle(GeometryBuilder::build_as(
@@ -180,7 +180,7 @@ struct TargetImage;
 fn setup_target_image(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands
         .spawn_bundle(SpriteBundle {
-            texture: asset_server.load("images/test.png"),
+            texture: asset_server.load("images/Unfair_Duck-01.png"),
             ..SpriteBundle::default()
         })
         .insert(TargetImage)
@@ -244,7 +244,7 @@ fn setup_score(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands
         .spawn_bundle(TextBundle {
             text: Text::with_section(
-                format!("Score: {}", 0.0),
+                format!("Score: {:.1}", 0.0),
                 TextStyle {
                     font: asset_server.load("fonts/Archivo-Black.ttf"),
                     font_size: 40.0,
@@ -304,7 +304,7 @@ fn calculate_score(
     }
 
     score.0 = ((sum_good - sum_bad) as f64 / max_score as f64) * 100.0;
-    score_text.single_mut().sections[0].value = format!("Score: {}", score.0);
+    score_text.single_mut().sections[0].value = format!("Score: {:.1}", score.0);
 }
 
 fn despawn_painting(mut commands: Commands, q: Query<Entity, With<PaintingScene>>) {

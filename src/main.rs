@@ -14,6 +14,13 @@ use crate::game_state::GameState;
 
 fn main() {
     App::new()
+        .insert_resource(WindowDescriptor {
+            title: "Unfair Painting Competition".to_string(),
+            width: 600.0,
+            height: 800.0,
+            resizable: false,
+            ..Default::default()
+        })
         .add_state(GameState::Loading)
         .add_plugins(DefaultPlugins)
         .add_startup_system(setup)
