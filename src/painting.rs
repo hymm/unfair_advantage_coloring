@@ -26,10 +26,7 @@ impl Plugin for PaintingPlugin {
                     .with_system(handle_done_clicked)
                     .with_system(calculate_score),
             )
-            .add_system_set(
-                SystemSet::on_exit(GameState::Painting)
-                    .with_system(despawn_painting),
-            );
+            .add_system_set(SystemSet::on_exit(GameState::Painting).with_system(despawn_painting));
     }
 }
 
@@ -244,27 +241,29 @@ pub struct ScoreText;
 fn setup_score(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands.insert_resource(Score(0.0));
 
-    commands.spawn_bundle(TextBundle {
-        text: Text::with_section(
-            format!("Score: {}", 0.0),
-            TextStyle {
-                font: asset_server.load("fonts/Archivo-Black.ttf"),
-                font_size: 40.0,
-                color: Color::rgb(0.5, 0.5, 1.0),
-            },
-            Default::default(),
-        ),
-        style: Style {
-            position_type: PositionType::Absolute,
-            position: Rect {
-                top: Val::Px(5.0),
-                left: Val::Px(5.0),
+    commands
+        .spawn_bundle(TextBundle {
+            text: Text::with_section(
+                format!("Score: {}", 0.0),
+                TextStyle {
+                    font: asset_server.load("fonts/Archivo-Black.ttf"),
+                    font_size: 40.0,
+                    color: Color::rgb(0.5, 0.5, 1.0),
+                },
+                Default::default(),
+            ),
+            style: Style {
+                position_type: PositionType::Absolute,
+                position: Rect {
+                    top: Val::Px(5.0),
+                    left: Val::Px(5.0),
+                    ..Default::default()
+                },
                 ..Default::default()
             },
             ..Default::default()
-        },
-        ..Default::default()
-    }).insert(ScoreText);
+        })
+        .insert(ScoreText);
 }
 
 fn calculate_score(
