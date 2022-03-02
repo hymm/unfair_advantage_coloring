@@ -192,7 +192,15 @@ fn paint(
     mut images: ResMut<Assets<Image>>,
     mouse_button: Res<Input<MouseButton>>,
     brush: Query<(&mut GlobalTransform, &Paintbrush)>,
+    mut ready: Local<bool>,
 ) {
+
+    if !*ready {
+        if mouse_button.just_released(MouseButton::Left) {
+            *ready = true;
+        }
+        return;
+    }
     if mouse_button.pressed(MouseButton::Left) {
         for (t, Paintbrush { extents }) in brush.iter() {
             let cursor_pos = get_canvas_position_from_translation(t);
