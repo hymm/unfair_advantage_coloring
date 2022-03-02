@@ -8,7 +8,7 @@ use crate::comm::create_drawings::DrawingsInput;
 pub struct CommPlugin;
 impl Plugin for CommPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system(setup_comm);
+        app.add_startup_system(setup_comm);
     }
 }
 
@@ -50,7 +50,7 @@ where
     });
 }
 
-struct CommChannels {
+pub struct CommChannels {
     result_req_tx: Sender<DrawingsInput>,
     result_res_rx: Receiver<Result<create_drawings::CreateDrawingsCreateDrawings, String>>,
 }
