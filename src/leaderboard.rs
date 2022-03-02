@@ -1,7 +1,11 @@
-use async_compat::Compat;
-use bevy::{prelude::*, tasks::IoTaskPool};
+use bevy::{prelude::*};
 
-use crate::{constants::NORMAL_BUTTON, game_state::GameState, painting::Score};
+use crate::{
+    comm::{create_drawings::DrawingsInput, CommChannels},
+    constants::NORMAL_BUTTON,
+    game_state::GameState,
+    painting::Score,
+};
 
 pub struct LeaderBoardPlugin;
 impl Plugin for LeaderBoardPlugin {
@@ -51,12 +55,18 @@ fn setup_ui(mut commands: Commands, asset_server: Res<AssetServer>) {
 
 fn write_name_system(
     mut interaction_query: Query<&Interaction, (Changed<Interaction>, With<SendButton>)>,
-    task_pool: ResMut<IoTaskPool>,
+    comm_channels: ResMut<CommChannels>,
+    score: Res<Score>,
 ) {
     for interaction in interaction_query.iter_mut() {
         if *interaction == Interaction::Clicked {
-            let task = task_pool.spawn(Compat::new(async {}));
-            task.detach();
+            comm_channels.result_req_tx.try_send(DrawingsInput {
+                name: "testy".to_string(),
+                score: Some(score.0),
+                brush: None,
+                shape: None,
+                drawing: None,
+            }).unwrap();
         }
     }
 }

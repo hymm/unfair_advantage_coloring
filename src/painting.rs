@@ -233,7 +233,7 @@ fn color_pixel(image: &mut Image, pos: Vec2) {
 }
 
 #[derive(Default)]
-pub struct Score(pub f32);
+pub struct Score(pub f64);
 
 #[derive(Component)]
 pub struct ScoreText;
@@ -303,7 +303,7 @@ fn calculate_score(
         }
     }
 
-    score.0 = ((sum_good - sum_bad) as f32 / max_score as f32) * 100.0;
+    score.0 = ((sum_good - sum_bad) as f64 / max_score as f64) * 100.0;
     score_text.single_mut().sections[0].value = format!("Score: {}", score.0);
 }
 

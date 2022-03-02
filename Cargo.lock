@@ -1706,6 +1706,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a9b58571cfc3cc42c3e8ff44fc6cfbb6c0dea17ed22d20f9d8f1efc4e8209a3f"
 dependencies = [
  "graphql_query_derive",
+ "reqwest",
  "serde",
  "serde_json",
 ]
@@ -3524,6 +3525,7 @@ dependencies = [
  "futures-lite",
  "getrandom",
  "graphql_client",
+ "js-sys",
  "rand",
  "reqwest",
  "serde",

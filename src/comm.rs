@@ -1,9 +1,11 @@
 use async_channel::{Receiver, Sender};
 use bevy::prelude::{info, App, Commands, Plugin};
-use graphql_client::{GraphQLQuery, Response};
+use graphql_client::{GraphQLQuery, reqwest::post_graphql};
 use std::future::Future;
 
 use crate::comm::create_drawings::DrawingsInput;
+
+use self::create_drawings::ResponseData;
 
 pub struct CommPlugin;
 impl Plugin for CommPlugin {
@@ -38,7 +40,7 @@ where
 #[cfg(target_arch = "wasm32")]
 pub fn run_async<F>(future: F)
 where
-    F: Future<Output = ()> + Send + 'static,
+    F: Future<Output = ()> + 'static,
 {
     wasm_bindgen_futures::spawn_local(async move {
         let local = tokio::task::LocalSet::new();
@@ -51,8 +53,8 @@ where
 }
 
 pub struct CommChannels {
-    result_req_tx: Sender<DrawingsInput>,
-    result_res_rx: Receiver<Result<create_drawings::CreateDrawingsCreateDrawings, String>>,
+    pub result_req_tx: Sender<DrawingsInput>,
+    pub result_res_rx: Receiver<Result<create_drawings::CreateDrawingsCreateDrawings, String>>,
 }
 
 fn setup_comm(mut commands: Commands) {
@@ -73,9 +75,13 @@ fn setup_comm(mut commands: Commands) {
 #[derive(GraphQLQuery)]
 #[graphql(
     schema_path = "graphql/schema.graphql",
-    query_path = "graphql/create_entry.graphql"
+    query_path = "graphql/create_entry.graphql",
+    response_derives = "Debug"
 )]
-struct createDrawings;
+pub struct createDrawings;
+
+unsafe impl Send for DrawingsInput {}
+unsafe impl Send for ResponseData {}
 
 async fn post_result_task(
     result_req_rx: Receiver<DrawingsInput>,
@@ -84,7 +90,7 @@ async fn post_result_task(
     info!("sending");
     let result = async move {
         let new_drawing = result_req_rx.recv().await.unwrap();
-        let request_body = createDrawings::build_query(create_drawings::Variables { new_drawing });
+        let variables = create_drawings::Variables { new_drawing };
 
         const FAUNA_API_TOKEN: &str = env!("UNFAIR_ADVANTAGE_PUBLIC_FAUNA_CLIENT_KEY");
 
@@ -99,19 +105,13 @@ async fn post_result_task(
             )
             .build()
             .unwrap();
-        let res = client
-            .post("https://graphql.fauna.com/graphql")
-            .json(&request_body)
-            .send()
+
+        let res = post_graphql::<createDrawings, _>(&client, "https://graphql.fauna.com/graphql", variables)
             .await
             .map_err(|e| e.to_string())?;
-        let response_body: Response<create_drawings::ResponseData> =
-            res.json().await.map_err(|e| e.to_string())?;
-        if let Some(errors) = response_body.errors {
-            return Err(errors[0].to_string());
-        }
+
         info!("sent");
-        Ok(response_body.data.unwrap().create_drawings)
+        Ok(res.data.unwrap().create_drawings)
     }
     .await;
 
