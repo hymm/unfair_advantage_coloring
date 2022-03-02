@@ -1,7 +1,9 @@
 {
   "cSpell.words": [
     "Archivo",
+    "bindgen",
     "despawn",
+    "Egui",
     "leaderboard",
     "reqwest"
   ]

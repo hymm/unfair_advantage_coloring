@@ -5,5 +5,6 @@ pub enum GameState {
     NameEntry,
     ShowBrush,
     Painting,
+    Results,
     LeaderBoard,
 }

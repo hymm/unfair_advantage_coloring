@@ -19,6 +19,7 @@ async-compat = "0.2"
 async-channel = "1.6"
 bevy = "0.6"
 bevy_prototype_lyon = "0.4"
+bevy_egui = "0.11"
 getrandom = { version = "0.2", features = ["js"] }
 graphql_client = { version = "0.10.0", features = ["reqwest"] }
 serde = "1"

@@ -3,10 +3,11 @@
 // #![windows_subsystem = "windows"]
 
 use bevy::prelude::*;
+use bevy_egui::EguiPlugin;
 mod comm;
 mod constants;
 mod game_state;
-mod leaderboard;
+mod results;
 mod painting;
 mod start_menu;
 
@@ -23,10 +24,11 @@ fn main() {
         })
         .add_state(GameState::Loading)
         .add_plugins(DefaultPlugins)
+        .add_plugin(EguiPlugin)
         .add_startup_system(setup)
         .add_plugin(crate::start_menu::StartMenuPlugin)
         .add_plugin(crate::painting::PaintingPlugin)
-        .add_plugin(crate::leaderboard::LeaderBoardPlugin)
+        .add_plugin(crate::results::ResultsPlugin)
         .add_plugin(crate::comm::CommPlugin)
         .add_startup_system(finish_loading)
         .run();

@@ -168,7 +168,7 @@ fn handle_done_clicked(
 ) {
     for interaction in interaction_query.iter_mut() {
         if *interaction == Interaction::Clicked {
-            state.set(GameState::LeaderBoard).unwrap();
+            state.set(GameState::Results).unwrap();
             mouse_button.clear();
         }
     }
