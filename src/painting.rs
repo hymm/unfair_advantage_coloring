@@ -194,7 +194,6 @@ fn paint(
     brush: Query<(&mut GlobalTransform, &Paintbrush)>,
     mut ready: Local<bool>,
 ) {
-
     if !*ready {
         if mouse_button.just_released(MouseButton::Left) {
             *ready = true;
@@ -256,7 +255,7 @@ fn setup_score(mut commands: Commands, asset_server: Res<AssetServer>) {
                 TextStyle {
                     font: asset_server.load("fonts/Archivo-Black.ttf"),
                     font_size: 40.0,
-                    color: Color::rgb(0.5, 0.5, 1.0),
+                    color: Color::WHITE,
                 },
                 Default::default(),
             ),
@@ -271,7 +270,8 @@ fn setup_score(mut commands: Commands, asset_server: Res<AssetServer>) {
             },
             ..Default::default()
         })
-        .insert(ScoreText);
+        .insert(ScoreText)
+        .insert(PaintingScene);
 }
 
 fn calculate_score(
@@ -280,6 +280,7 @@ fn calculate_score(
     images: Res<Assets<Image>>,
     mut score: ResMut<Score>,
     mut score_text: Query<&mut Text, With<ScoreText>>,
+    mut last_score: Local<Score>,
 ) {
     let target_image = images.get(target_image.single());
     if target_image.is_none() {
@@ -312,7 +313,15 @@ fn calculate_score(
     }
 
     score.0 = ((sum_good - sum_bad) as f64 / max_score as f64) * 100.0;
-    score_text.single_mut().sections[0].value = format!("Score: {:.1}", score.0);
+    let mut score_text = score_text.single_mut();
+    score_text.sections[0].value = format!("Score: {:.1}", score.0);
+
+    if score.0 > last_score.0 {
+        score_text.sections[0].style.color = Color::WHITE;
+    } else if score.0 < last_score.0 {
+        score_text.sections[0].style.color = Color::RED;
+    }
+    last_score.0 = score.0;
 }
 
 fn despawn_painting(mut commands: Commands, q: Query<Entity, With<PaintingScene>>) {
