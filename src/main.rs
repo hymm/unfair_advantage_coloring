@@ -8,8 +8,8 @@ mod comm;
 mod constants;
 mod game_state;
 mod leaderboard;
-mod results;
 mod painting;
+mod results;
 mod start_menu;
 
 use crate::game_state::GameState;

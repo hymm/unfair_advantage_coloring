@@ -84,7 +84,7 @@ fn setup_comm(mut commands: Commands) {
 #[derive(GraphQLQuery)]
 #[graphql(
     schema_path = "graphql/schema.graphql",
-    query_path = "graphql/create_entry.graphql",
+    query_path = "graphql/create_entry.graphql"
 )]
 pub struct createDrawings;
 
