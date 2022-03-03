@@ -3,10 +3,7 @@ use bevy_egui::{egui, EguiContext};
 use std::cmp::PartialOrd;
 
 use crate::{
-    comm::{
-        all_drawings::{self, AllDrawingsAllDrawingsData},
-        CommChannels,
-    },
+    comm::{all_drawings, CommChannels},
     game_state::GameState,
 };
 

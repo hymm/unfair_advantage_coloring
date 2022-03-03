@@ -26,7 +26,11 @@ impl Plugin for PaintingPlugin {
                     .with_system(handle_done_clicked)
                     .with_system(calculate_score),
             )
-            .add_system_set(SystemSet::on_exit(GameState::Painting).with_system(despawn_painting));
+            .add_system_set(
+                SystemSet::on_exit(GameState::Painting)
+                    .with_system(despawn_painting)
+                    .with_system(generate_paintbrush_texture),
+            );
     }
 }
 
@@ -44,6 +48,10 @@ struct Paintbrush {
 #[derive(Component)]
 struct BrushParent;
 
+const BRUSH_RECT_MIN: f32 = 20.;
+const BRUSH_RECT_MAX: f32 = 100.;
+const BRUSH_MAX_OFFSET: f32 = 75.;
+
 fn setup_brush(mut commands: Commands) {
     let mut rng = thread_rng();
     let parent_id = commands
@@ -53,12 +61,12 @@ fn setup_brush(mut commands: Commands) {
         .insert(GlobalTransform::default())
         .id();
     for _ in 0..3 {
-        let width = rng.gen_range(20.0..100.0);
-        let height = rng.gen_range(20.0..100.0);
+        let width = rng.gen_range(BRUSH_RECT_MIN..BRUSH_RECT_MAX);
+        let height = rng.gen_range(BRUSH_RECT_MIN..BRUSH_RECT_MAX);
         let extents = Vec2::new(width, height);
 
-        let offset_x = rng.gen_range(-75.0..75.0);
-        let offset_y = rng.gen_range(-75.0..75.0);
+        let offset_x = rng.gen_range(-BRUSH_MAX_OFFSET..BRUSH_MAX_OFFSET);
+        let offset_y = rng.gen_range(-BRUSH_MAX_OFFSET..BRUSH_MAX_OFFSET);
         commands.entity(parent_id).with_children(|parent| {
             parent
                 .spawn_bundle(GeometryBuilder::build_as(
@@ -208,12 +216,16 @@ fn paint(
             let handle = q.single();
             let image = images.get_mut(handle).unwrap();
 
-            for x in 0..(extents.x as u32) {
-                for y in 0..(extents.y as u32) {
-                    let pos = brush_top_left + Vec2::new(x as f32, y as f32);
-                    color_pixel(image, pos);
-                }
-            }
+            paint_rect(extents, brush_top_left, image);
+        }
+    }
+}
+
+fn paint_rect(extents: &Vec2, top_left: Vec2, image: &mut Image) {
+    for x in 0..(extents.x as u32) {
+        for y in 0..(extents.y as u32) {
+            let pos = top_left + Vec2::new(x as f32, y as f32);
+            color_pixel(image, pos);
         }
     }
 }
@@ -328,4 +340,44 @@ fn despawn_painting(mut commands: Commands, q: Query<Entity, With<PaintingScene>
     for e in q.iter() {
         commands.entity(e).despawn();
     }
+}
+
+pub struct PaintbrushImageHandle(pub Handle<Image>);
+
+fn generate_paintbrush_texture(
+    mut commands: Commands,
+    mut images: ResMut<Assets<Image>>,
+    brush: Query<(&mut Transform, &Paintbrush)>,
+) {
+    let d = BRUSH_RECT_MAX + 2. * BRUSH_MAX_OFFSET;
+    let mut image = Image::new_fill(
+        Extent3d {
+            width: d as u32,
+            height: d as u32,
+            ..Default::default()
+        },
+        TextureDimension::D2,
+        &[255, 255, 255, 0],
+        TextureFormat::Rgba8Unorm,
+    );
+
+    for (t, Paintbrush { extents }) in brush.iter() {
+        let mut canvas_pos = t.translation.truncate() + Vec2::new(d, -d) / 2.0;
+        canvas_pos.y = -canvas_pos.y;
+        let brush_top_left = canvas_pos - *extents / 2.0;
+        for x in 0..(extents.x as u32) {
+            for y in 0..(extents.y as u32) {
+                let pos = brush_top_left + Vec2::new(x as f32, y as f32);
+
+                let start_byte = ((pos.y * d + pos.x) * 4.) as usize;
+                let new = [255, 0, 0, 255];
+                let splice_range = start_byte..(start_byte + 4);
+                image.data.splice(splice_range, new);
+            }
+        }
+    }
+
+    let handle = images.add(image);
+
+    commands.insert_resource(PaintbrushImageHandle(handle));
 }

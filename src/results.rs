@@ -4,13 +4,13 @@ use bevy_egui::{egui, EguiContext};
 use crate::{
     comm::{create_drawings::DrawingsInput, CommChannels},
     game_state::GameState,
-    painting::Score,
+    painting::{PaintbrushImageHandle, Score},
 };
 
 pub struct ResultsPlugin;
 impl Plugin for ResultsPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system_set(SystemSet::on_enter(GameState::Results))
+        app.add_system_set(SystemSet::on_enter(GameState::Results).with_system(set_egui_image))
             .add_system_set(
                 SystemSet::on_update(GameState::Results)
                     .with_system(egui_ui)
@@ -67,6 +67,10 @@ fn egui_ui(
                 ui.label(e);
             });
         }
+
+        ui.vertical_centered(|ui| {
+            ui.image(egui::TextureId::User(0), [250., 250.]);
+        });
     });
 }
 
@@ -83,4 +87,8 @@ fn check_done(
             state.set(GameState::LeaderBoard).unwrap();
         }
     }
+}
+
+fn set_egui_image(handle: Res<PaintbrushImageHandle>, mut egui_context: ResMut<EguiContext>) {
+    egui_context.set_egui_texture(0, handle.0.clone());
 }
