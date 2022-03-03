@@ -7,6 +7,7 @@ use bevy_egui::EguiPlugin;
 mod comm;
 mod constants;
 mod game_state;
+mod leaderboard;
 mod results;
 mod painting;
 mod start_menu;
@@ -30,6 +31,7 @@ fn main() {
         .add_plugin(crate::painting::PaintingPlugin)
         .add_plugin(crate::results::ResultsPlugin)
         .add_plugin(crate::comm::CommPlugin)
+        .add_plugin(crate::leaderboard::LeaderboardPlugin)
         .add_startup_system(finish_loading)
         .run();
 }
