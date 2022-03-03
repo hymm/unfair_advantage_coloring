@@ -76,6 +76,26 @@ type Mutation {
     """The 'Drawings' document's ID"""
     id: ID!
   ): Drawings
+
+  """
+  Partially updates an existing document in the collection of 'Drawings'. It only modifies the values that are specified in the arguments. During execution, it verifies that required fields are not set to 'null'.
+  """
+  partialUpdateDrawings(
+    """The 'Drawings' document's ID"""
+    id: ID!
+
+    """'Drawings' input values"""
+    data: PartialUpdateDrawingsInput!
+  ): Drawings
+}
+
+"""'Drawings' input values"""
+input PartialUpdateDrawingsInput {
+  name: String
+  score: Float
+  brush: String
+  shape: String
+  drawing: String
 }
 
 scalar Time
@@ -94,12 +114,31 @@ type Drawings {
   _ts: Long!
 }
 
+"""The pagination object for elements of type 'Drawings'."""
+type DrawingsPage {
+  """The elements of type 'Drawings' in this page."""
+  data: [Drawings]!
+
+  """A cursor for elements coming after the current page."""
+  after: String
+
+  """A cursor for elements coming before the current page."""
+  before: String
+}
+
 type Query {
   """Find a document from the collection of 'Drawings' by its id."""
   findDrawingsByID(
     """The 'Drawings' document's ID"""
     id: ID!
   ): Drawings
+  allDrawings(
+    """The number of items to return per page."""
+    _size: Int
+
+    """The pagination cursor."""
+    _cursor: String
+  ): DrawingsPage!
 }
 
 """

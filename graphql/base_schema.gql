@@ -5,3 +5,7 @@ type Drawings {
    shape: String
    drawing: String
 }
+
+type Query {
+   allDrawings: [Drawings!]
+}

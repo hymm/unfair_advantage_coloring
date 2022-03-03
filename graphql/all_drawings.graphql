@@ -1,0 +1,10 @@
+query allDrawings {
+  allDrawings {
+    data {
+      name
+      score
+    }
+    after
+    before
+  }
+}
