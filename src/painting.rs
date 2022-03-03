@@ -67,6 +67,7 @@ fn setup_brush(mut commands: Commands) {
 
         let offset_x = rng.gen_range(-BRUSH_MAX_OFFSET..BRUSH_MAX_OFFSET);
         let offset_y = rng.gen_range(-BRUSH_MAX_OFFSET..BRUSH_MAX_OFFSET);
+
         commands.entity(parent_id).with_children(|parent| {
             parent
                 .spawn_bundle(GeometryBuilder::build_as(
@@ -212,7 +213,6 @@ fn paint(
         for (t, Paintbrush { extents }) in brush.iter() {
             let cursor_pos = get_canvas_position_from_translation(t);
             let brush_top_left = cursor_pos - *extents / 2.0;
-            // TODO: discard pixels outside of canvas
             let handle = q.single();
             let image = images.get_mut(handle).unwrap();
 
@@ -357,7 +357,7 @@ fn generate_paintbrush_texture(
             ..Default::default()
         },
         TextureDimension::D2,
-        &[255, 255, 255, 0],
+        &[255, 255, 255, 255],
         TextureFormat::Rgba8Unorm,
     );
 
@@ -369,7 +369,7 @@ fn generate_paintbrush_texture(
             for y in 0..(extents.y as u32) {
                 let pos = brush_top_left + Vec2::new(x as f32, y as f32);
 
-                let start_byte = ((pos.y * d + pos.x) * 4.) as usize;
+                let start_byte = (pos.y as usize * d as usize + pos.x as usize) * 4;
                 let new = [255, 0, 0, 255];
                 let splice_range = start_byte..(start_byte + 4);
                 image.data.splice(splice_range, new);

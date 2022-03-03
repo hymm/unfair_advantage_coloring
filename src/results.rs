@@ -69,7 +69,7 @@ fn egui_ui(
         }
 
         ui.vertical_centered(|ui| {
-            ui.image(egui::TextureId::User(0), [250., 250.]);
+            ui.image(egui::TextureId::User(0), [50., 50.]);
         });
     });
 }
