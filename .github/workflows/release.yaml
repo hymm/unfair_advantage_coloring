@@ -3,15 +3,14 @@ name: Release
 on:
   push:
     tags:
-      - '*'
+      - "*"
 
 env:
   # update with the name of the main binary
-  binary: bevy_github_ci_template
-
+  binary: unfair_coloring_competition
+  UNFAIR_ADVANTAGE_PUBLIC_FAUNA_CLIENT_KEY: ${{ secrets.UNFAIR_ADVANTAGE_PUBLIC_FAUNA_CLIENT_KEY  }}
 
 jobs:
-
   # Build for wasm
   release-wasm:
     runs-on: ubuntu-latest

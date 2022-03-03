@@ -8,9 +8,9 @@ on:
 
 env:
   CARGO_TERM_COLOR: always
+  UNFAIR_ADVANTAGE_PUBLIC_FAUNA_CLIENT_KEY: ${{ secrets.UNFAIR_ADVANTAGE_PUBLIC_FAUNA_CLIENT_KEY  }}
 
 jobs:
-
   # Run cargo test
   test:
     name: Test Suite
