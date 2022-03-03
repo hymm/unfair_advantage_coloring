@@ -17,6 +17,7 @@ codegen-units = 1
 [dependencies]
 async-compat = "0.2"
 async-channel = "1.6"
+base64 = "0.13"
 bevy = "0.6"
 bevy_prototype_lyon = "0.4"
 bevy_egui = "0.11"

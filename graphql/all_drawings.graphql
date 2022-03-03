@@ -3,6 +3,7 @@ query allDrawings {
     data {
       name
       score
+      brush
     }
     after
     before

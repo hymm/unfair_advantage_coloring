@@ -41,6 +41,8 @@ fn egui_ui(
     comm_channels: ResMut<CommChannels>,
     mut result_comm_status: ResMut<ResultCommStatus>,
     score: Res<Score>,
+    paint_brush_handle: Res<PaintbrushImageHandle>,
+    images: Res<Assets<Image>>,
 ) {
     egui::CentralPanel::default().show(egui_ctx.ctx_mut(), |ui| {
         ui.horizontal(|ui| {
@@ -48,12 +50,14 @@ fn egui_ui(
             ui.text_edit_singleline(&mut user_nick.0);
 
             if ui.add(egui::Button::new("Send Result")).clicked() {
+                let image = images.get(paint_brush_handle.0.clone()).unwrap();
+                let image_hex = base64::encode(&image.data);
                 comm_channels
                     .result_req_tx
                     .try_send(DrawingsInput {
                         name: user_nick.0.clone(),
                         score: Some(score.0),
-                        brush: None,
+                        brush: Some(image_hex),
                         shape: None,
                         drawing: None,
                     })
