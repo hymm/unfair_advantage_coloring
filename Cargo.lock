@@ -3615,7 +3615,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c74c96594835e10fa545e2a51e8709f30b173a092bfd6036ef2cec53376244f3"
 
 [[package]]
-name = "unfair_advantage_coloring"
+name = "unfair_coloring_competition"
 version = "0.1.0"
 dependencies = [
  "async-channel",

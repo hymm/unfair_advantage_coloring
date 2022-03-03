@@ -1,5 +1,5 @@
 [package]
-name = "unfair_advantage_coloring"
+name = "unfair_coloring_competition"
 version = "0.1.0"
 edition = "2021"
 license = "MIT OR Apache-2.0"
