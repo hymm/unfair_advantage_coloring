@@ -37,6 +37,7 @@ fn egui_ui(
     mut egui_ctx: ResMut<EguiContext>,
     mut all: ResMut<AllDrawings>,
     brush_hashmap: Res<BrushHashmap>,
+    mut state: ResMut<State<GameState>>,
 ) {
     egui::CentralPanel::default().show(egui_ctx.ctx_mut(), |ui| {
         egui::ScrollArea::vertical().show(ui, |ui| {
@@ -68,6 +69,15 @@ fn egui_ui(
             });
         });
     });
+
+    
+    egui::SidePanel::right("side_panel")
+        .default_width(100.)
+        .show(egui_ctx.ctx_mut(), |ui| {
+            if ui.button("Back to Start Menu").clicked() {
+                state.set(GameState::StartMenu).unwrap();
+            }
+        });
 }
 
 fn start_poll_leaderboard(comm_channels: ResMut<CommChannels>) {

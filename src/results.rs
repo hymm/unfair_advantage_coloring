@@ -35,6 +35,7 @@ enum ResultCommStatus {
     Error(String),
 }
 
+#[allow(clippy::too_many_arguments)]
 fn egui_ui(
     mut egui_ctx: ResMut<EguiContext>,
     mut user_nick: ResMut<UserNick>,

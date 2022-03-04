@@ -80,7 +80,7 @@ fn setup_brush(mut commands: Commands) {
                 ))
                 .insert(Paintbrush { extents })
                 .insert(PaintingScene);
-        });
+        }).insert(PaintingScene);
     }
 }
 

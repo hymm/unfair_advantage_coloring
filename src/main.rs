@@ -17,7 +17,7 @@ use crate::game_state::GameState;
 fn main() {
     App::new()
         .insert_resource(WindowDescriptor {
-            title: "Unfair Painting Competition".to_string(),
+            title: "Unfair Coloring Competition".to_string(),
             width: 600.0,
             height: 700.0,
             resizable: false,
