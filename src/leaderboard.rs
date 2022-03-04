@@ -70,7 +70,6 @@ fn egui_ui(
         });
     });
 
-    
     egui::SidePanel::right("side_panel")
         .default_width(100.)
         .show(egui_ctx.ctx_mut(), |ui| {

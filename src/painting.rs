@@ -53,6 +53,7 @@ const BRUSH_RECT_MAX: f32 = 100.;
 const BRUSH_MAX_OFFSET: f32 = 75.;
 
 fn setup_brush(mut commands: Commands) {
+    commands.insert_resource(PaintReady(false));
     let mut rng = thread_rng();
     let parent_id = commands
         .spawn()
@@ -68,19 +69,22 @@ fn setup_brush(mut commands: Commands) {
         let offset_x = rng.gen_range(-BRUSH_MAX_OFFSET..BRUSH_MAX_OFFSET);
         let offset_y = rng.gen_range(-BRUSH_MAX_OFFSET..BRUSH_MAX_OFFSET);
 
-        commands.entity(parent_id).with_children(|parent| {
-            parent
-                .spawn_bundle(GeometryBuilder::build_as(
-                    &shapes::Rectangle {
-                        extents,
-                        origin: RectangleOrigin::Center,
-                    },
-                    DrawMode::Fill(FillMode::color(Color::rgb_u8(200, 140, 50))),
-                    Transform::from_xyz(offset_x, offset_y, 0.0),
-                ))
-                .insert(Paintbrush { extents })
-                .insert(PaintingScene);
-        }).insert(PaintingScene);
+        commands
+            .entity(parent_id)
+            .with_children(|parent| {
+                parent
+                    .spawn_bundle(GeometryBuilder::build_as(
+                        &shapes::Rectangle {
+                            extents,
+                            origin: RectangleOrigin::Center,
+                        },
+                        DrawMode::Fill(FillMode::color(Color::rgb_u8(200, 140, 50))),
+                        Transform::from_xyz(offset_x, offset_y, 0.0),
+                    ))
+                    .insert(Paintbrush { extents })
+                    .insert(PaintingScene);
+            })
+            .insert(PaintingScene);
     }
 }
 
@@ -133,7 +137,7 @@ fn setup_ui(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands
         .spawn_bundle(ButtonBundle {
             style: Style {
-                size: Size::new(Val::Px(200.0), Val::Px(50.0)),
+                size: Size::new(Val::Px(600.0), Val::Px(50.0)),
                 // center button
                 margin: Rect {
                     left: Val::Auto,
@@ -196,16 +200,19 @@ fn setup_target_image(mut commands: Commands, asset_server: Res<AssetServer>) {
         .insert(PaintingScene);
 }
 
+#[derive(Default)]
+struct PaintReady(pub bool);
+
 fn paint(
     q: Query<&Handle<Image>, With<PaintingArea>>,
     mut images: ResMut<Assets<Image>>,
     mouse_button: Res<Input<MouseButton>>,
     brush: Query<(&mut GlobalTransform, &Paintbrush)>,
-    mut ready: Local<bool>,
+    mut ready: ResMut<PaintReady>,
 ) {
-    if !*ready {
+    if !ready.0 {
         if mouse_button.just_released(MouseButton::Left) {
-            *ready = true;
+            ready.0 = true;
         }
         return;
     }
