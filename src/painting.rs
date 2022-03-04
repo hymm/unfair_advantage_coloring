@@ -133,7 +133,7 @@ fn setup_ui(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands
         .spawn_bundle(ButtonBundle {
             style: Style {
-                size: Size::new(Val::Px(150.0), Val::Px(65.0)),
+                size: Size::new(Val::Px(200.0), Val::Px(50.0)),
                 // center button
                 margin: Rect {
                     left: Val::Auto,

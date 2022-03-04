@@ -19,7 +19,7 @@ fn main() {
         .insert_resource(WindowDescriptor {
             title: "Unfair Painting Competition".to_string(),
             width: 600.0,
-            height: 800.0,
+            height: 700.0,
             resizable: false,
             ..Default::default()
         })
