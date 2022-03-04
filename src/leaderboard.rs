@@ -17,7 +17,7 @@ use crate::{
 pub struct LeaderboardPlugin;
 impl Plugin for LeaderboardPlugin {
     fn build(&self, app: &mut App) {
-        app.insert_resource(AllDrawings::default())
+        app.insert_resource(AllDrawings(None))
             .insert_resource(BrushHashmap(HashMap::default()))
             .add_system_set(
                 SystemSet::on_enter(GameState::LeaderBoard).with_system(start_poll_leaderboard),
@@ -55,16 +55,22 @@ fn egui_ui(
                             .partial_cmp(&a.score.unwrap())
                             .unwrap_or(std::cmp::Ordering::Equal)
                     });
-                    for (rank, result) in drawings.iter().enumerate() {
-                        ui.label(format!("{}", rank + 1));
-                        ui.label(result.name.clone());
-                        ui.label(format!("{:.1}", result.score.unwrap().clone()));
-                        if let Some(image) = brush_hashmap.0.get(&result.name) {
-                            ui.image(egui::TextureId::User(image.egui_id), [50., 50.]);
+                    if drawings.is_empty() {
+                        ui.label("No Entries");
+                    } else {
+                        for (rank, result) in drawings.iter().enumerate() {
+                            ui.label(format!("{}", rank + 1));
+                            ui.label(result.name.clone());
+                            ui.label(format!("{:.1}", result.score.unwrap().clone()));
+                            if let Some(image) = brush_hashmap.0.get(&result.name) {
+                                ui.image(egui::TextureId::User(image.egui_id), [50., 50.]);
+                            }
+                            ui.end_row();
                         }
-                        ui.end_row();
                     }
                     all.0 = Some(drawings);
+                } else {
+                    ui.label("Loading");
                 }
             });
         });
