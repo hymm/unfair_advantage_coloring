@@ -167,7 +167,9 @@ async fn get_drawings_task(
             let res = post_graphql::<allDrawings, _>(
                 &client,
                 "https://graphql.fauna.com/graphql",
-                all_drawings::Variables,
+                all_drawings::Variables {
+                    size: 1000
+                },
             )
             .await
             .map_err(|e| e.to_string())?;

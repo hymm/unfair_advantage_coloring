@@ -1,5 +1,5 @@
-query allDrawings {
-  allDrawings {
+query allDrawings($size: Int!) {
+  allDrawings(_size: $size) {
     data {
       name
       score
